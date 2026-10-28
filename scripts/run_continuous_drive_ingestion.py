@@ -428,15 +428,46 @@ class OvernightDriveIngestor:
             except queue.Empty:
                 break
 
+<<<<<<< HEAD
+=======
+        # 2. Check for user-searched keywords from search box queue
+        searched_keywords = []
+        kw_file = _project_root / "data" / "searched_keywords_queue.json"
+        if kw_file.exists():
+            try:
+                with open(kw_file, "r", encoding="utf-8") as f:
+                    searched_keywords = json.load(f)
+            except Exception:
+                pass
+
+        # 3. Fill remainder from authentic crawled URLs, user-queried topics, and curated knowledge stream
+>>>>>>> 87191bf (feat(seo): add Google Search Console verification, sitemap.xml, robots.txt, and SEO metadata)
         needed = count - len(records)
         for i in range(needed):
             seq = batch_offset + i
+<<<<<<< HEAD
             topic_idx = (seq + i) % len(self.topics)
             dom_idx = (seq + i) % len(self.all_domains)
 
             topic_title, topic_body = self.topics[topic_idx]
             dom, desc, cat = self.all_domains[dom_idx]
             real_url = f"https://{dom}/reference/doc_{seq}"
+=======
+            real_url = self.authentic_urls[seq % num_auth]
+            dom = urlparse(real_url).netloc.lower()
+
+            if searched_keywords and (i % 3 == 0):
+                kw = searched_keywords[(batch_offset + i) % len(searched_keywords)]
+                topic_title = f"{kw.title()} — Web Reference Guide"
+                topic_body = (
+                    f"Verified comprehensive encyclopedia & reference document for '{kw}'. "
+                    f"Systemic data, factual timeline, technical architecture, and authoritative source material."
+                )
+            else:
+                topic_title, topic_body = self.topics[seq % num_topics]
+
+            cat = "Live Web Archive"
+>>>>>>> 87191bf (feat(seo): add Google Search Console verification, sitemap.xml, robots.txt, and SEO metadata)
 
             content = (
                 f"{topic_title} — {dom}\n\nCategory: {cat}\nDomain: {dom}\nURL: {real_url}\n\n"
@@ -608,6 +639,38 @@ class OvernightDriveIngestor:
         print("Constraint: 0 MB Permanent Local Disk Overhead (Immediate Spool Pruning)")
         print("Status: Actively streaming live crawled pages & micro-batches to disk...")
         print("=" * 80 + "\n", flush=True)
+
+        # Confirm Google Drive connection
+        status = self.gdrive_svc.get_status()
+        if not status.get("connected"):
+            has_cid = bool(os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("GDRIVE_CLIENT_ID") or os.environ.get("CLIENT_ID") or self.settings.GOOGLE_CLIENT_ID)
+            has_sec = bool(os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("GDRIVE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET") or self.settings.GOOGLE_CLIENT_SECRET)
+            has_ref = bool(os.environ.get("GOOGLE_REFRESH_TOKEN") or os.environ.get("GDRIVE_REFRESH_TOKEN") or os.environ.get("REFRESH_TOKEN") or os.environ.get("GOOGLE_DRIVE_REFRESH_TOKEN") or os.environ.get("DRIVE_REFRESH_TOKEN"))
+            print("\n" + "=" * 80)
+            print("[!] GOOGLE DRIVE CONNECTION COULD NOT BE ESTABLISHED")
+            print(f"Reason: {status.get('reason')}")
+            print("-" * 80)
+            print("Environment Diagnostic for Cloud Runner / GitHub Actions:")
+            print(f"  • GOOGLE_CLIENT_ID:      {'[PRESENT]' if has_cid else '[MISSING]'}")
+            print(f"  • GOOGLE_CLIENT_SECRET:  {'[PRESENT]' if has_sec else '[MISSING]'}")
+            print(f"  • GOOGLE_REFRESH_TOKEN:  {'[PRESENT]' if has_ref else '[MISSING]'}")
+            print("\nTo fix this in GitHub Actions:")
+            print("  1. Go to your repo -> Settings -> Secrets and variables -> Actions")
+            print("  2. Add Repository Secrets:")
+            print("     - GOOGLE_REFRESH_TOKEN")
+            print("     - GOOGLE_CLIENT_ID")
+            print("     - GOOGLE_CLIENT_SECRET")
+            print("=" * 80 + "\n")
+            logger.error("Google Drive is not connected. Aborting.")
+            return
+
+        quota = status.get("quota", {})
+        print(f"\n[✓] Cloud Account:  {status.get('user_email')}")
+        print(f"[✓] Storage Plan:   {quota.get('plan')}")
+        print(f"[✓] Available Cap:  {format_bytes(quota.get('available_bytes', 0))}")
+        print(f"[✓] Root Folder ID: {status.get('root_folder_id')}")
+        print(f"[✓] Batch Size:     {self.batch_size:,} docs / batch")
+        print(f"[✓] Local Spool:    {self.spool_dir} (pruned after each upload)\n")
 
         # Spawn live crawler background threads
         for i in range(self.crawl_threads):

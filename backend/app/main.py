@@ -10,7 +10,7 @@ if str(_project_root) not in sys.path:
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse, Response
 
 from app.core.config import get_settings
 from app.core.logging import setup_logging
@@ -113,8 +113,63 @@ app.include_router(storage_router)
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    from fastapi.responses import Response
     return Response(status_code=204)
+
+
+@app.get("/google6ba000893a0dc8c1.html", response_class=HTMLResponse, include_in_schema=False)
+async def google_site_verification():
+    return HTMLResponse("google-site-verification: google6ba000893a0dc8c1.html")
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
+async def robots_txt():
+    content = "User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://omsearch.web.app/sitemap.xml\n"
+    return PlainTextResponse(content)
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml():
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://omsearch.web.app/</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Quantum+mechanics</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Artificial+intelligence</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Python+asynchronous+programming</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Space+exploration</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Solar+System</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
+"""
+    return Response(content=xml_content, media_type="application/xml")
 
 
 @app.get("/", tags=["System"])
@@ -127,3 +182,4 @@ async def root():
         "health": "/api/v1/health",
         "search": "/api/v1/search?q={query}",
     }
+

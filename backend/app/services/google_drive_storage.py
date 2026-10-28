@@ -249,27 +249,84 @@ class GoogleDriveStorageService:
             )
             if not cred_row:
                 # Cloud runner / CI / GitHub Actions fallback from environment
-                refresh_token = (
-                    os.environ.get("GOOGLE_REFRESH_TOKEN")
-                    or os.environ.get("GDRIVE_REFRESH_TOKEN")
+                # 1. Check for JSON credential blob first
+                json_cred_str = (
+                    os.environ.get("GOOGLE_CREDENTIALS")
+                    or os.environ.get("GDRIVE_CREDENTIALS")
+                    or os.environ.get("CREDENTIALS_JSON")
+                    or os.environ.get("GDRIVE_SECRET")
                 )
-                client_id = os.environ.get("GOOGLE_CLIENT_ID") or self.settings.GOOGLE_CLIENT_ID
-                client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or self.settings.GOOGLE_CLIENT_SECRET
+                refresh_token = None
+                client_id = None
+                client_secret = None
+
+                if json_cred_str:
+                    try:
+                        raw_json = json.loads(json_cred_str.strip())
+                        # Could be installed/web OAuth json or token json
+                        installed = raw_json.get("installed") or raw_json.get("web") or raw_json
+                        client_id = installed.get("client_id")
+                        client_secret = installed.get("client_secret")
+                        refresh_token = installed.get("refresh_token") or raw_json.get("refresh_token")
+                    except Exception as e:
+                        logger.warning("Could not parse JSON credentials from environment: %s", e)
+
+                # 2. Check all possible secret alias names
+                refresh_token = (
+                    refresh_token
+                    or os.environ.get("GOOGLE_REFRESH_TOKEN")
+                    or os.environ.get("GDRIVE_REFRESH_TOKEN")
+                    or os.environ.get("REFRESH_TOKEN")
+                    or os.environ.get("GOOGLE_DRIVE_REFRESH_TOKEN")
+                    or os.environ.get("DRIVE_REFRESH_TOKEN")
+                    or os.environ.get("GDRIVE_TOKEN")
+                    or os.environ.get("DRIVE_TOKEN")
+                )
+                client_id = (
+                    client_id
+                    or os.environ.get("GOOGLE_CLIENT_ID")
+                    or os.environ.get("GDRIVE_CLIENT_ID")
+                    or os.environ.get("CLIENT_ID")
+                    or os.environ.get("GOOGLE_DRIVE_CLIENT_ID")
+                    or self.settings.GOOGLE_CLIENT_ID
+                )
+                client_secret = (
+                    client_secret
+                    or os.environ.get("GOOGLE_CLIENT_SECRET")
+                    or os.environ.get("GDRIVE_CLIENT_SECRET")
+                    or os.environ.get("CLIENT_SECRET")
+                    or os.environ.get("GOOGLE_DRIVE_CLIENT_SECRET")
+                    or self.settings.GOOGLE_CLIENT_SECRET
+                )
+
                 if refresh_token and client_id and client_secret:
                     creds = Credentials(
                         token=None,
-                        refresh_token=refresh_token,
+                        refresh_token=refresh_token.strip(),
                         token_uri="https://oauth2.googleapis.com/token",
-                        client_id=client_id,
-                        client_secret=client_secret,
+                        client_id=client_id.strip(),
+                        client_secret=client_secret.strip(),
                         scopes=self.settings.GOOGLE_DRIVE_SCOPES,
                     )
                     try:
                         creds.refresh(Request())
+                        logger.info("Successfully authenticated Google Drive via environment secrets.")
                         return creds
                     except Exception as e:
-                        logger.error("Failed to build/refresh Google Drive credentials from environment: %s", e)
-                return None
+                        logger.error("Failed to refresh Google Drive credentials from environment secrets: %s", e)
+                        self._last_auth_error = f"Token refresh failed: {e}"
+                        return None
+                else:
+                    missing = []
+                    if not client_id:
+                        missing.append("GOOGLE_CLIENT_ID")
+                    if not client_secret:
+                        missing.append("GOOGLE_CLIENT_SECRET")
+                    if not refresh_token:
+                        missing.append("GOOGLE_REFRESH_TOKEN")
+                    self._last_auth_error = f"Missing required credentials: {', '.join(missing)}"
+                    logger.warning("Google Drive credentials incomplete in environment. Missing: %s", missing)
+                    return None
 
             token_data = json.loads(self._decrypt(cred_row.encrypted_tokens))
             creds = Credentials(
@@ -325,9 +382,10 @@ class GoogleDriveStorageService:
         try:
             creds = self.get_credentials(db=db)
             if not creds:
+                err_msg = getattr(self, "_last_auth_error", None) or "No active Google Drive credentials found. Connect via /api/v1/storage/google-drive/connect"
                 return {
                     "connected": False,
-                    "reason": "No active Google Drive credentials found. Connect via /api/v1/storage/google-drive/connect",
+                    "reason": err_msg,
                     "storage_budget_bytes": self.settings.GOOGLE_DRIVE_STORAGE_BUDGET_BYTES,
                     "target_capacity": "5 TB (Google One)",
                 }

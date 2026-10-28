@@ -78,3 +78,25 @@ def test_search_stats_endpoint(client):
     assert "total_documents" in data
     assert data["total_documents"] >= 1
     assert "top_domains" in data
+
+
+def test_google_site_verification_endpoint(client):
+    response = client.get("/google6ba000893a0dc8c1.html")
+    assert response.status_code == 200
+    assert "google-site-verification: google6ba000893a0dc8c1.html" in response.text
+
+
+def test_robots_txt_endpoint(client):
+    response = client.get("/robots.txt")
+    assert response.status_code == 200
+    assert "User-agent: *" in response.text
+    assert "Sitemap: https://omsearch.web.app/sitemap.xml" in response.text
+
+
+def test_sitemap_xml_endpoint(client):
+    response = client.get("/sitemap.xml")
+    assert response.status_code == 200
+    assert "application/xml" in response.headers.get("content-type", "")
+    assert "<urlset" in response.text
+    assert "<loc>https://omsearch.web.app/</loc>" in response.text
+

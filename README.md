@@ -8,6 +8,34 @@ OM Search is an independent, general-purpose open web search engine foundation. 
 
 ---
 
+## ⚡ Quickstart (Run in 60 Seconds)
+
+Whether you are on Windows, macOS, or Linux, you can run the entire engine with one command:
+
+```bash
+# Windows (Double-click or run):
+setup.bat
+
+# Linux / macOS:
+chmod +x setup.sh && ./setup.sh
+
+# Or Universal Cross-Platform:
+python setup.py
+```
+
+To launch both Backend (`http://127.0.0.1:8000`) and Frontend (`http://127.0.0.1:5173`) simultaneously:
+```bash
+# Windows:
+start.bat
+
+# Linux / macOS:
+./start.sh
+```
+
+👉 See [SETUP.md](file:///d:/Projects/Om%20Search%20Engine/SETUP.md) for full setup options, environment variables, and cloud continuous indexing instructions.
+
+---
+
 ## Architecture Overview
 
 ```

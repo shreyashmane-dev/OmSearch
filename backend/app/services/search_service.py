@@ -1,3 +1,4 @@
+import re
 import time
 import logging
 import math
@@ -144,6 +145,19 @@ class SearchService:
         raw_hits = hits_meta.get("hits", [])
 
         if not raw_hits:
+            try:
+                from app.services.on_demand_indexer import get_on_demand_indexer
+                new_pages = get_on_demand_indexer().crawl_and_index_query(clean_q)
+                if new_pages:
+                    response_data = self.repo.search_documents(es_query)
+                    hits_meta = response_data.get("hits", {})
+                    total_hits = hits_meta.get("total", {})
+                    total_raw = total_hits.get("value", 0) if isinstance(total_hits, dict) else int(total_hits or 0)
+                    raw_hits = hits_meta.get("hits", [])
+            except Exception as e:
+                logger.debug("On-demand crawl error: %s", e)
+
+        if not raw_hits:
             took_ms = round((time.perf_counter() - start_time) * 1000, 2)
             return SearchResponse(
                 query=clean_q,
@@ -178,6 +192,83 @@ class SearchService:
                 "_score": float(hit.get("_score") or 0.0),
                 "highlight": hit.get("highlight", {}),
             })
+
+        # Strict Keyword Relevance Guard:
+        # Guarantee that returned results are strictly and solely relevant to the searched keywords
+        query_terms = [t for t in re.findall(r'[\w]+', clean_q.lower()) if len(t) >= 1]
+        STOP_WORDS = {
+            "the", "a", "an", "is", "are", "was", "were", "in", "at", "of", "on", "for", 
+            "to", "by", "with", "about", "and", "or", "what", "where", "which", "who", 
+            "whom", "how", "why", "when", "my", "your", "his", "her", "its", "their", 
+            "our", "me", "you", "him", "them", "us", "can", "could", "should", "would", 
+            "do", "does", "did"
+        }
+        substantive_kws = [w for w in query_terms if w not in STOP_WORDS and len(w) >= 2]
+        if not substantive_kws:
+            substantive_kws = query_terms
+
+        # Primary keywords: non-numeric tokens that carry the core subject
+        primary_kws = [w for w in substantive_kws if not w.isdigit()]
+        if not primary_kws:
+            primary_kws = substantive_kws
+
+        def is_doc_relevant(cand):
+            doc_text = f"{cand.get('title', '')} {cand.get('snippet', '')} {cand.get('content', '')}".lower()
+            if not any(kw in doc_text for kw in primary_kws):
+                return False
+            matched = sum(1 for kw in substantive_kws if kw in doc_text)
+            min_match = max(1, math.ceil(len(substantive_kws) * 0.5))
+            return matched >= min_match
+
+        relevant_candidates = [c for c in candidate_items if is_doc_relevant(c)]
+
+        # If fewer than 3 strictly relevant results exist, dynamically crawl & index on-demand!
+        if len(relevant_candidates) < 3 and len(clean_q) >= 2:
+            try:
+                from app.services.on_demand_indexer import get_on_demand_indexer
+                crawled_docs = get_on_demand_indexer().crawl_and_index_query(clean_q)
+                if crawled_docs:
+                    response_data = self.repo.search_documents(es_query)
+                    hits_meta = response_data.get("hits", {})
+                    fresh_hits = hits_meta.get("hits", [])
+                    fresh_candidates = []
+                    for hit in fresh_hits:
+                        source = hit.get("_source", {})
+                        fresh_candidates.append({
+                            "id": hit.get("_id", source.get("id", "")),
+                            "url": source.get("url", ""),
+                            "canonical_url": source.get("canonical_url", ""),
+                            "domain": source.get("domain", ""),
+                            "title": source.get("title", ""),
+                            "content": source.get("content", ""),
+                            "snippet": source.get("snippet", ""),
+                            "language": source.get("language", "en"),
+                            "published_at": source.get("published_at"),
+                            "indexed_at": source.get("indexed_at"),
+                            "document_type": source.get("document_type", "webpage"),
+                            "_score": float(hit.get("_score") or 0.0),
+                            "highlight": hit.get("highlight", {}),
+                        })
+                    relevant_candidates = [c for c in fresh_candidates if is_doc_relevant(c)]
+            except Exception as e:
+                logger.debug("On-demand crawl-and-retry notice: %s", e)
+
+        candidate_items = relevant_candidates
+        if not candidate_items:
+            took_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            return SearchResponse(
+                query=clean_q,
+                total=0,
+                page=page,
+                size=size,
+                total_pages=0,
+                took_ms=took_ms,
+                results=[],
+                is_early_index=True,
+                query_intent=processed_query.intent,
+                spelling_suggestion=processed_query.spelling_suggestion,
+                ranking_version=self.ranking_config.version,
+            )
 
         # 3. Candidate Deduplication / Near-Duplicate Suppression
         if self.ranking_config.enable_near_dedup:

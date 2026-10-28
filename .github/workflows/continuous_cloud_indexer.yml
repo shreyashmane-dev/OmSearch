@@ -30,11 +30,12 @@ jobs:
       - name: Run Cloud Archiving to Google Drive (Zero Disk Footprint)
         env:
           PYTHONPATH: .:backend
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GOOGLE_DRIVE_ROOT_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_ROOT_FOLDER_ID }}
-          OPERATOR_API_KEY: ${{ secrets.OPERATOR_API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID || secrets.GDRIVE_CLIENT_ID || secrets.CLIENT_ID || secrets.GOOGLE_DRIVE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET || secrets.GDRIVE_CLIENT_SECRET || secrets.CLIENT_SECRET || secrets.GOOGLE_DRIVE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN || secrets.GDRIVE_REFRESH_TOKEN || secrets.REFRESH_TOKEN || secrets.GOOGLE_DRIVE_REFRESH_TOKEN || secrets.DRIVE_REFRESH_TOKEN || secrets.GDRIVE_TOKEN }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS || secrets.GDRIVE_CREDENTIALS || secrets.CREDENTIALS_JSON || secrets.GDRIVE_SECRET }}
+          GOOGLE_DRIVE_ROOT_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_ROOT_FOLDER_ID || secrets.GDRIVE_ROOT_FOLDER_ID || secrets.ROOT_FOLDER_ID || '1HSmEYSlw57hQkW4FBLft_-11e6sR72Qk' }}
+          OPERATOR_API_KEY: ${{ secrets.OPERATOR_API_KEY || 'om-operator-secret-key-2026' }}
         run: |
           mkdir -p data data/temp_drive_spool
           python scripts/run_continuous_drive_ingestion.py --batch-size 5000 --max-batches 20 --crawl-threads 8
