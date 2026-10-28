@@ -1,0 +1,18 @@
+{
+  "name": "OM Search Engine",
+  "short_name": "OM Search",
+  "description": "Independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf9f5",
+  "theme_color": "#a03b14",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

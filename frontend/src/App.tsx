@@ -65,6 +65,7 @@ export const App: React.FC = () => {
       setQuery(qParam);
       setPage(pParam);
       executeSearch(qParam, pParam);
+      document.title = `${qParam} — OM Search`;
     }
     fetchStats().then((s) => s && setStats(s));
     const syncInterval = setInterval(() => {
@@ -165,11 +166,24 @@ export const App: React.FC = () => {
     setError(null);
     setShowSuggestions(false);
 
-    // Update browser URL
+    // Update browser URL and dynamic SEO metadata
     const url = new URL(window.location.href);
     url.searchParams.set('q', clean);
     url.searchParams.set('p', searchPage.toString());
     window.history.pushState({}, '', url.toString());
+
+    document.title = `${clean} — OM Search`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        `Search results for "${clean}" on OM Search Engine. Browse independent crawl results with BM25 ranking.`
+      );
+    }
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', `https://omsearch.web.app/?q=${encodeURIComponent(clean)}`);
+    }
 
     try {
       const resp = await fetchSearch(clean, searchPage, 10);
@@ -191,6 +205,18 @@ export const App: React.FC = () => {
     url.searchParams.delete('q');
     url.searchParams.delete('p');
     window.history.pushState({}, '', url.toString());
+    document.title = 'OM Search — Independent Web Search Engine';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'OM Search is an independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking.'
+      );
+    }
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', 'https://omsearch.web.app/');
+    }
     setTimeout(() => searchInputRef.current?.focus(), 50);
   };
 

@@ -6,36 +6,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OM Search — Independent Web Search Engine</title>
     <meta name="description" content="OM Search is an independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking." />
-    <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="search engine, independent search engine, web crawler, private search, OM search, BM25 ranking, PageRank, knowledge discovery, real-time search, fast web search" />
+    <meta name="author" content="OM Search Team" />
+    <meta name="application-name" content="OM Search" />
+    <meta name="apple-mobile-web-app-title" content="OM Search" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#a03b14" />
+    <meta name="msapplication-TileColor" content="#a03b14" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="google-site-verification" content="google6ba000893a0dc8c1" />
     <link rel="canonical" href="https://omsearch.web.app/" />
 
+    <!-- OpenSearch & PWA Webmanifest -->
+    <link rel="search" type="application/opensearchdescription+xml" title="OM Search" href="/opensearch.xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OM Search" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:url" content="https://omsearch.web.app/" />
     <meta property="og:title" content="OM Search — Independent Web Search Engine" />
     <meta property="og:description" content="OM Search is an independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking." />
-    <meta property="og:image" content="/favicon.svg" />
+    <meta property="og:image" content="https://omsearch.web.app/favicon.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:alt" content="OM Search Engine" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@omsearch" />
+    <meta name="twitter:creator" content="@omsearch" />
     <meta name="twitter:url" content="https://omsearch.web.app/" />
     <meta name="twitter:title" content="OM Search — Independent Web Search Engine" />
     <meta name="twitter:description" content="OM Search is an independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking." />
+    <meta name="twitter:image" content="https://omsearch.web.app/favicon.svg" />
+    <meta name="twitter:image:alt" content="OM Search Engine" />
 
-    <!-- Schema.org Search Engine Structured Data -->
+    <!-- Schema.org Search Engine & Organization Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "OM Search",
-        "url": "https://omsearch.web.app/",
-        "description": "Independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking.",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://omsearch.web.app/?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://omsearch.web.app/#website",
+            "url": "https://omsearch.web.app/",
+            "name": "OM Search",
+            "alternateName": ["OM Search Engine", "OM Web Search"],
+            "description": "Independent general-purpose web search engine with dedicated crawling, BM25 indexing, and relevance ranking.",
+            "publisher": {
+              "@id": "https://omsearch.web.app/#organization"
+            },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://omsearch.web.app/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://omsearch.web.app/#organization",
+            "name": "OM Search Engine",
+            "url": "https://omsearch.web.app/",
+            "logo": "https://omsearch.web.app/favicon.svg",
+            "sameAs": [
+              "https://github.com/omprasad-007/OmSearch"
+            ],
+            "description": "An independent, transparent, and privacy-respecting general-purpose web search engine."
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://omsearch.web.app/#webapp",
+            "name": "OM Search",
+            "applicationCategory": "SearchApplication",
+            "operatingSystem": "All",
+            "browserRequirements": "Requires JavaScript. Requires HTML5.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "description": "Fast, independent web search engine powered by custom crawling, PageRank, and BM25 relevance scoring."
+          }
+        ]
       }
     </script>
 

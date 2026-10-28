@@ -123,37 +123,186 @@ async def google_site_verification():
 
 @app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
 async def robots_txt():
-    content = "User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://omsearch.web.app/sitemap.xml\n"
+    content = """# OM Search Engine robots.txt
+# https://omsearch.web.app/
+
+User-agent: *
+Allow: /
+Allow: /?q=*
+Allow: /opensearch.xml
+Allow: /favicon.svg
+Allow: /manifest.webmanifest
+
+# Prevent search engines from indexing backend APIs and heavy internal JSON files
+Disallow: /api/
+Disallow: /docs
+Disallow: /redoc
+Disallow: /crawled_pages.json
+Disallow: /manifest_crawled_batch_live.json
+Disallow: /drive_ingestion_live_status.json
+Disallow: /*.json$
+
+# Major search crawlers
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: Applebot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+# Canonical Host
+Host: omsearch.web.app
+
+# Sitemap Location
+Sitemap: https://omsearch.web.app/sitemap.xml
+"""
     return PlainTextResponse(content)
+
+
+@app.get("/opensearch.xml", include_in_schema=False)
+async def opensearch_xml():
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>OM Search</ShortName>
+  <Description>Independent web search engine with dedicated crawler, BM25 indexing, and neural ranking</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <OutputEncoding>UTF-8</OutputEncoding>
+  <Image width="64" height="64" type="image/svg+xml">https://omsearch.web.app/favicon.svg</Image>
+  <Url type="text/html" template="https://omsearch.web.app/?q={searchTerms}"/>
+  <Url type="application/x-suggestions+json" template="https://omsearch.onrender.com/api/v1/suggestions?q={searchTerms}"/>
+  <Contact>support@omsearch.web.app</Contact>
+  <Tags>search web crawler privacy independent</Tags>
+</OpenSearchDescription>"""
+    return Response(content=xml_content, media_type="application/opensearchdescription+xml")
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap_xml():
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
   <url>
     <loc>https://omsearch.web.app/</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  <url>
-    <loc>https://omsearch.web.app/?q=Quantum+mechanics</loc>
-    <lastmod>2026-10-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
+  <!-- Popular Curated Search Queries: Artificial Intelligence & Machine Learning -->
   <url>
     <loc>https://omsearch.web.app/?q=Artificial+intelligence</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Machine+learning+algorithms</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Transformer+neural+networks</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Large+language+models</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Computer Science & Information Retrieval -->
+  <url>
+    <loc>https://omsearch.web.app/?q=PageRank+algorithm+explanation</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Okapi+BM25+ranking+function</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Web+crawler+architecture</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Inverted+index+data+structure</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Distributed+systems+consensus</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=SQLite+FTS5+full-text+search</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Software Engineering & Web Development -->
   <url>
     <loc>https://omsearch.web.app/?q=Python+asynchronous+programming</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=FastAPI+high+performance+async</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=TypeScript+design+patterns</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=React+performance+optimization</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Rust+memory+safety+concurrency</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Physics & Astronomy -->
+  <url>
+    <loc>https://omsearch.web.app/?q=Quantum+mechanics</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://omsearch.web.app/?q=Space+exploration</loc>
@@ -167,9 +316,42 @@ async def sitemap_xml():
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=General+relativity+black+holes</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=James+Webb+Space+Telescope+discoveries</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Open Knowledge & History -->
+  <url>
+    <loc>https://omsearch.web.app/?q=Open+source+software+history</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Wikipedia+knowledge+graph</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://omsearch.web.app/?q=Cryptography+and+network+security</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
 """
     return Response(content=xml_content, media_type="application/xml")
+
 
 
 @app.get("/", tags=["System"])

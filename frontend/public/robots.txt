@@ -1,6 +1,45 @@
+# OM Search Engine robots.txt
+# https://omsearch.web.app/
+
 User-agent: *
 Allow: /
+Allow: /?q=*
+Allow: /opensearch.xml
+Allow: /favicon.svg
+Allow: /manifest.webmanifest
 
+# Prevent search engines from indexing backend APIs and heavy internal JSON files to preserve crawl budget
 Disallow: /api/
+Disallow: /docs
+Disallow: /redoc
+Disallow: /crawled_pages.json
+Disallow: /manifest_crawled_batch_live.json
+Disallow: /drive_ingestion_live_status.json
+Disallow: /*.json$
 
+# Major search crawler rules
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: Applebot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+# Canonical Host
+Host: omsearch.web.app
+
+# Sitemap Location
 Sitemap: https://omsearch.web.app/sitemap.xml

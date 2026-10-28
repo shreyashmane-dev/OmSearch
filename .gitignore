@@ -32,6 +32,7 @@ ENV/
 *.sqlite3
 *.db.gz
 *.jsonl.gz
+*.pkl
 om_search_local.db
 om_search_fts.db
 om_fallback_store.json

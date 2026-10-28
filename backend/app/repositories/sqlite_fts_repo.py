@@ -299,17 +299,12 @@ class SQLiteFTSRepository:
             query_text = query_body["q"]
 
         clean_q = query_text.strip()
-<<<<<<< HEAD
         tokens = [t for t in re.findall(r'[\w]+', clean_q.lower()) if len(t) >= 1]
-=======
-        fts_query = self._sanitize_fts_query(clean_q, strict=True)
->>>>>>> 87191bf (feat(seo): add Google Search Console verification, sitemap.xml, robots.txt, and SEO metadata)
 
         conn = self._get_connection()
         hits: List[Dict[str, Any]] = []
         total_count = 0
 
-<<<<<<< HEAD
         if tokens:
             # 1. Build strict AND query first to ensure all specific keywords are in matched docs
             fts_query_and = self._build_fts_query(clean_q, mode="and")
@@ -322,35 +317,22 @@ class SQLiteFTSRepository:
             except Exception:
                 count_and = 0
 
+            # If fewer than 3 strict results exist, dynamically crawl & index pages for the searched words
+            if count_and < 3 and len(clean_q) >= 2 and not domain_filter and not lang_filter:
+                try:
+                    from app.services.on_demand_indexer import get_on_demand_indexer
+                    get_on_demand_indexer().crawl_and_index_query(clean_q)
+                    cur = conn.execute("SELECT COUNT(*) FROM documents_fts WHERE documents_fts MATCH ?", [fts_query_and])
+                    count_and = cur.fetchone()[0]
+                except Exception as e:
+                    logger.debug("On-demand keyword indexing notice: %s", e)
+
             fts_query = fts_query_and if count_and > 0 else fts_query_or
 
             # Prepare parameters for exact title and phrase match boost
             phrase_pattern = f"%{clean_q.lower()}%"
             primary_token_pattern = f"%{tokens[0]}%"
-
-=======
-        if fts_query:
-            if not domain_filter and not lang_filter:
-                try:
-                    cur = conn.execute("SELECT COUNT(*) FROM documents_fts WHERE documents_fts MATCH ?", [fts_query])
-                    total_count = cur.fetchone()[0]
-                except Exception:
-                    total_count = 0
-
-                # If fewer than 3 strict results exist, dynamically crawl & index pages for the searched words
-                if total_count < 3 and len(clean_q) >= 2:
-                    try:
-                        from app.services.on_demand_indexer import get_on_demand_indexer
-                        get_on_demand_indexer().crawl_and_index_query(clean_q)
-                        cur = conn.execute("SELECT COUNT(*) FROM documents_fts WHERE documents_fts MATCH ?", [fts_query])
-                        total_count = cur.fetchone()[0]
-                    except Exception as e:
-                        logger.debug("On-demand keyword indexing notice: %s", e)
-
-                if total_count == 0 and len(clean_q.split()) > 1:
-                    fts_query = self._sanitize_fts_query(clean_q, strict=False)
-            # Full-text BM25 search with ranking weights (5.0 title, 2.0 snippet, 1.0 content)
->>>>>>> 87191bf (feat(seo): add Google Search Console verification, sitemap.xml, robots.txt, and SEO metadata)
+            # Full-text BM25 search with ranking weights
             base_where = "WHERE documents_fts MATCH ?"
             params: List[Any] = [fts_query]
 

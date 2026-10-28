@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>OM Search</ShortName>
+  <Description>Independent web search engine with dedicated crawler, BM25 indexing, and neural ranking</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <OutputEncoding>UTF-8</OutputEncoding>
+  <Image width="64" height="64" type="image/svg+xml">https://omsearch.web.app/favicon.svg</Image>
+  <Url type="text/html" template="https://omsearch.web.app/?q={searchTerms}"/>
+  <Url type="application/x-suggestions+json" template="https://omsearch.onrender.com/api/v1/suggestions?q={searchTerms}"/>
+  <Contact>support@omsearch.web.app</Contact>
+  <Tags>search web crawler privacy independent</Tags>
+</OpenSearchDescription>
+

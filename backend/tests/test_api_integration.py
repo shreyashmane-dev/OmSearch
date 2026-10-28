@@ -100,3 +100,10 @@ def test_sitemap_xml_endpoint(client):
     assert "<urlset" in response.text
     assert "<loc>https://omsearch.web.app/</loc>" in response.text
 
+def test_opensearch_xml_endpoint(client):
+    response = client.get("/opensearch.xml")
+    assert response.status_code == 200
+    assert "application/opensearchdescription+xml" in response.headers.get("content-type", "")
+    assert "<OpenSearchDescription" in response.text
+    assert "OM Search" in response.text
+

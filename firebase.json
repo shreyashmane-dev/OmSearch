@@ -24,7 +24,7 @@
         ]
       },
       {
-        "source": "@(sitemap.xml|robots.txt|google*.html)",
+        "source": "@(sitemap.xml|robots.txt|google*.html|opensearch.xml|manifest.webmanifest)",
         "headers": [
           {
             "key": "Cache-Control",
