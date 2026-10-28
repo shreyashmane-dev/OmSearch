@@ -12,12 +12,16 @@ interface StorageStatus {
   root_folder_id?: string;
   subfolders?: Record<string, string>;
   quota?: {
-    total_bytes: number;
-    used_bytes: number;
-    available_bytes: number;
-    used_percent: number;
-    plan: string;
+    total_bytes?: number;
+    used_bytes?: number;
+    available_bytes?: number;
+    used_percent?: number;
+    usage_percentage?: number;
+    plan?: string;
+    [key: string]: any;
   };
+  metrics?: Record<string, any>;
+  live_crawler?: Record<string, any>;
   batch_statistics?: {
     total_batches: number;
     verified_uploaded: number;
@@ -26,6 +30,7 @@ interface StorageStatus {
     total_documents_archived?: number;
     total_compressed_bytes_archived: number;
   };
+  [key: string]: any;
 }
 
 interface BatchItem {
